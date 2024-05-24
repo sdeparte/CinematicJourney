@@ -1,10 +1,6 @@
 package com.wizbii.cinematic.journey.presentation.screen.movies
 
-import com.wizbii.cinematic.journey.domain.entity.Movie
-import com.wizbii.cinematic.journey.domain.entity.MovieId
-import com.wizbii.cinematic.journey.domain.entity.TmdbMovieId
-import com.wizbii.cinematic.journey.domain.entity.Universe
-import com.wizbii.cinematic.journey.domain.entity.UniverseId
+import com.wizbii.cinematic.journey.domain.entity.*
 import com.wizbii.cinematic.journey.presentation.component.top.bar.PreviewTopBarComponent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

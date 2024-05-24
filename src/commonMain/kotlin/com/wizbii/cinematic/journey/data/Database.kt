@@ -6,6 +6,7 @@ import app.cash.sqldelight.adapter.primitive.IntColumnAdapter
 import app.cash.sqldelight.db.SqlDriver
 import com.wizbii.cinematic.journey.domain.entity.MovieId
 import com.wizbii.cinematic.journey.domain.entity.TmdbMovieId
+import com.wizbii.cinematic.journey.domain.entity.TmdbPersonId
 import com.wizbii.cinematic.journey.domain.entity.UniverseId
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -23,6 +24,11 @@ fun DatabaseWithAdapters(driver: SqlDriver): Database =
         prerequisiteRecordAdapter = PrerequisiteRecord.Adapter(
             movieIdAdapter = MovieIdAdapter,
             prerequisiteMovieIdAdapter = MovieIdAdapter,
+        ),
+        tmdbCastRecordAdapter = TmdbCastRecord.Adapter(
+            idAdapter = TmdbPersonIdAdapter,
+            fetchDateAdapter = InstantAdapter,
+            tmdbMovieIdAdapter = TmdbMovieIdAdapter,
         ),
         tmdbMovieRecordAdapter = TmdbMovieRecord.Adapter(
             idAdapter = TmdbMovieIdAdapter,
@@ -54,6 +60,11 @@ private object MovieIdAdapter : ColumnAdapter<MovieId, String> {
 private object TmdbMovieIdAdapter : ColumnAdapter<TmdbMovieId, Long> {
     override fun decode(databaseValue: Long) = TmdbMovieId(databaseValue.toInt())
     override fun encode(value: TmdbMovieId) = value.value.toLong()
+}
+
+private object TmdbPersonIdAdapter : ColumnAdapter<TmdbPersonId, Long> {
+    override fun decode(databaseValue: Long) = TmdbPersonId(databaseValue.toInt())
+    override fun encode(value: TmdbPersonId) = value.value.toLong()
 }
 
 private object UniverseIdAdapter : ColumnAdapter<UniverseId, String> {

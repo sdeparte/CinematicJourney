@@ -26,6 +26,7 @@
     <!-- Component-specific strings -->
 
     <!-- Movie -->
+    <string name="movie_cast">Cast :</string>
     <string name="movie_prerequisites_zero">No prerequisites!</string>
     <string name="movie_prerequisites_one">Prerequisite:</string>
     <string name="movie_prerequisites_other">Prerequisites:</string>

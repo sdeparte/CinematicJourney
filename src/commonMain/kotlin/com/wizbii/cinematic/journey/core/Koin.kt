@@ -18,13 +18,7 @@ import com.wizbii.cinematic.journey.domain.repository.MovieRepository
 import com.wizbii.cinematic.journey.domain.repository.PreferencesRepository
 import com.wizbii.cinematic.journey.domain.repository.TmdbRepository
 import com.wizbii.cinematic.journey.domain.repository.UniverseRepository
-import com.wizbii.cinematic.journey.domain.use.case.GetMovieBackdropUrlForWidthUseCase
-import com.wizbii.cinematic.journey.domain.use.case.GetMoviePosterUrlForWidthUseCase
-import com.wizbii.cinematic.journey.domain.use.case.ObserveMovieUseCase
-import com.wizbii.cinematic.journey.domain.use.case.ObserveMoviesForUniverseUseCase
-import com.wizbii.cinematic.journey.domain.use.case.ObserveUniverseUseCase
-import com.wizbii.cinematic.journey.domain.use.case.ObserveUniversesUseCase
-import com.wizbii.cinematic.journey.domain.use.case.SetMovieWatchedUseCase
+import com.wizbii.cinematic.journey.domain.use.case.*
 import com.wizbii.cinematic.journey.domain.use.case.dark.mode.AlignPlatformDarkModeUseCase
 import com.wizbii.cinematic.journey.domain.use.case.dark.mode.GetDarkModePreferenceUseCase
 import com.wizbii.cinematic.journey.domain.use.case.dark.mode.ObserveDarkModePreferenceUseCase
@@ -54,6 +48,7 @@ private fun dataModule() = module {
     single { DatabaseWithAdapters(get()) }
     single { get<Database>().moviesQueries }
     single { get<Database>().prerequisitesQueries }
+    single { get<Database>().tmdbCastQueries }
     single { get<Database>().tmdbMoviesQueries }
     single { get<Database>().universesQueries }
 
@@ -65,7 +60,7 @@ private fun dataModule() = module {
     single<JsonFilesRepository> { DefaultJsonFilesRepository(get(), get()) }
     single<MovieRepository> { DefaultMovieRepository(get(), get()) }
     single<PreferencesRepository> { DefaultPreferencesRepository(get()) }
-    single<TmdbRepository> { DefaultTmdbRepository(get(), get()) }
+    single<TmdbRepository> { DefaultTmdbRepository(get(), get(), get()) }
     single<UniverseRepository> { DefaultUniverseRepository(get(), get()) }
 
 }
@@ -83,6 +78,7 @@ private fun domainModule() = module {
 
     factory { GetMovieBackdropUrlForWidthUseCase(get()) }
     factory { GetMoviePosterUrlForWidthUseCase(get()) }
+    factory { ObserveCastForMovieUseCase(get()) }
     factory { ObserveMovieUseCase(get(), get()) }
     factory { ObserveMoviesForUniverseUseCase(get(), get()) }
     factory { ObserveUniverseUseCase(get()) }

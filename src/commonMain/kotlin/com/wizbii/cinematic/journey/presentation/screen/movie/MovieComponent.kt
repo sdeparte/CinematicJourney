@@ -2,11 +2,14 @@ package com.wizbii.cinematic.journey.presentation.screen.movie
 
 import com.wizbii.cinematic.journey.domain.entity.Movie
 import com.wizbii.cinematic.journey.domain.entity.MovieId
+import com.wizbii.cinematic.journey.domain.entity.TmdbCast
 import com.wizbii.cinematic.journey.presentation.component.top.bar.TopBarComponent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface MovieComponent {
+
+    val cast: StateFlow<List<TmdbCast>?>
 
     val movie: StateFlow<Movie?>
 

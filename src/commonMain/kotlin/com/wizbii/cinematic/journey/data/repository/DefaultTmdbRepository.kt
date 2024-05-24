@@ -1,9 +1,12 @@
 package com.wizbii.cinematic.journey.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
+import com.wizbii.cinematic.journey.data.TmdbCastQueries
 import com.wizbii.cinematic.journey.data.TmdbMoviesQueries
 import com.wizbii.cinematic.journey.data.source.TmdbApiDataSource
+import com.wizbii.cinematic.journey.domain.entity.TmdbCast
 import com.wizbii.cinematic.journey.domain.entity.TmdbMovie
 import com.wizbii.cinematic.journey.domain.entity.TmdbMovieId
 import com.wizbii.cinematic.journey.domain.repository.TmdbRepository
@@ -16,6 +19,7 @@ import kotlinx.datetime.Instant
 
 class DefaultTmdbRepository(
     private val tmdbApiDataSource: TmdbApiDataSource,
+    private val tmdbCastQueries: TmdbCastQueries,
     private val tmdbMoviesQueries: TmdbMoviesQueries,
 ) : TmdbRepository {
 
@@ -63,6 +67,36 @@ class DefaultTmdbRepository(
             )
         }
 
+    override fun getLocalTmdbMovieCast(id: TmdbMovieId, language: String, maxFetchDate: Instant): Flow<List<TmdbCast>> =
+        tmdbCastQueries
+            .readTmdbCastForMovie(id, language)
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { tmdbCastRecords ->
+                tmdbCastRecords.map { tmdbCastRecord ->
+                    TmdbCast(
+                        character = tmdbCastRecord.character,
+                        name = tmdbCastRecord.name,
+                        profileImgPath = tmdbCastRecord.profileImgPath,
+                        tmdbMovieId = tmdbCastRecord.tmdbMovieId,
+                        tmdbPersonId = tmdbCastRecord.id,
+                    )
+                }
+            }
+
+    override suspend fun getRemoteTmdbMovieCast(id: TmdbMovieId, language: String): List<TmdbCast> =
+        tmdbApiDataSource.getMovieCredits(id, language).let { credits ->
+            credits.cast.map { cast ->
+                TmdbCast(
+                    character = cast.character,
+                    name = cast.name,
+                    profileImgPath = cast.profilePath,
+                    tmdbMovieId = credits.id,
+                    tmdbPersonId = cast.id,
+                )
+            }
+        }
+
     override suspend fun getTmdbPosterUrlForWidth(posterPath: String, width: Int): String =
         tmdbApiDataSource.getPosterUrlForWidth(posterPath, width)
 
@@ -80,6 +114,20 @@ class DefaultTmdbRepository(
             title = tmdbMovie.title,
             voteAverage = tmdbMovie.voteAverage,
         )
+    }
+
+    override suspend fun setLocalTmdbMovieCast(tmdbMovieCast: List<TmdbCast>, fetchDate: Instant, language: String) {
+        tmdbMovieCast.map { cast ->
+            tmdbCastQueries.createOrUpdateTmdbCast(
+                character = cast.character,
+                fetchDate = fetchDate,
+                id = cast.tmdbPersonId,
+                language = language,
+                name = cast.name,
+                profileImgPath = cast.profileImgPath,
+                tmdbMovieId = cast.tmdbMovieId,
+            )
+        }
     }
 
 }

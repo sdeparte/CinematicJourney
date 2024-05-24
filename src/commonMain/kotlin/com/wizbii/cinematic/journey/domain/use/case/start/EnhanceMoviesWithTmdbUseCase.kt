@@ -32,6 +32,8 @@ class EnhanceMoviesWithTmdbUseCase(
                 title = remoteTmdbMovie.title?.sanitize(),
             )
             tmdbRepository.setLocalTmdbMovie(tmdbMovie = tmdbMovie, fetchDate = now, language = language)
+            val remoteTmdbMovieCast = tmdbRepository.getRemoteTmdbMovieCast(id = localMovie.tmdbId, language = language)
+            tmdbRepository.setLocalTmdbMovieCast(tmdbMovieCast = remoteTmdbMovieCast, fetchDate = now, language = language)
         }
 
     }

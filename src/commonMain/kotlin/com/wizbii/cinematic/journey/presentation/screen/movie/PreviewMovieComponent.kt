@@ -1,15 +1,24 @@
 package com.wizbii.cinematic.journey.presentation.screen.movie
 
-import com.wizbii.cinematic.journey.domain.entity.Movie
-import com.wizbii.cinematic.journey.domain.entity.MovieId
-import com.wizbii.cinematic.journey.domain.entity.TmdbMovieId
-import com.wizbii.cinematic.journey.domain.entity.UniverseId
+import com.wizbii.cinematic.journey.domain.entity.*
 import com.wizbii.cinematic.journey.presentation.component.top.bar.PreviewTopBarComponent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.LocalDate
 import kotlin.random.Random
 
 class PreviewMovieComponent : MovieComponent {
+
+    override val cast = MutableStateFlow(
+        List(5) { index ->
+            TmdbCast(
+                character = "Robert D. Jr. / Iron Man",
+                tmdbMovieId = TmdbMovieId(index),
+                name = "Robert D. Jr.",
+                tmdbPersonId = TmdbPersonId(index),
+                profileImgPath = null,
+            )
+        }
+    )
 
     override val movie = MutableStateFlow(
         Movie(

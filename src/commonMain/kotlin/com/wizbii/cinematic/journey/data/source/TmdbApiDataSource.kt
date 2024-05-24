@@ -4,6 +4,7 @@ import com.wizbii.cinematic.journey.TMDB_API_KEY
 import com.wizbii.cinematic.journey.data.source.TmdbApiDataSource.TmdbImageType.BACKDROP
 import com.wizbii.cinematic.journey.data.source.TmdbApiDataSource.TmdbImageType.POSTER
 import com.wizbii.cinematic.journey.domain.entity.TmdbMovieId
+import com.wizbii.cinematic.journey.domain.entity.TmdbPersonId
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
@@ -108,6 +109,21 @@ class TmdbApiDataSource {
             }
         }
 
+    suspend fun getMovieCredits(tmdbMovieId: TmdbMovieId, language: String): TmdbMovieCredits =
+        try {
+            throttle {
+                http.get("movie/$tmdbMovieId/credits") {
+                    parameter("language", language)
+                }.body()
+            }
+        } catch (e: ClientRequestException) {
+            if (e.response.status == HttpStatusCode.NotFound) {
+                throw TmdbMovieNotFoundException(tmdbMovieId)
+            } else {
+                throw e
+            }
+        }
+
     suspend fun getPosterUrlForWidth(posterPath: String, width: Int): String =
         getImageUrlForWidth(posterPath, width, POSTER)
 
@@ -166,6 +182,20 @@ class TmdbApiDataSource {
         val title: String,
         val voteAverage: Float?,
         val voteCount: Int,
+    )
+
+    @Serializable
+    data class TmdbMovieCredits(
+        val id: TmdbMovieId,
+        val cast: List<Cast>,
+    )
+
+    @Serializable
+    data class Cast(
+        val character: String?,
+        val id: TmdbPersonId,
+        val name: String?,
+        val profilePath: String?,
     )
 
     class TmdbMovieNotFoundException(id: TmdbMovieId) :

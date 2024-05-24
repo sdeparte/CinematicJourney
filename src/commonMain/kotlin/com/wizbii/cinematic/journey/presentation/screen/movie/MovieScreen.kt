@@ -1,17 +1,8 @@
 package com.wizbii.cinematic.journey.presentation.screen.movie
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.StarHalf
@@ -49,14 +40,17 @@ import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import com.wizbii.cinematic.journey.domain.entity.Movie
 import com.wizbii.cinematic.journey.domain.entity.MovieId
+import com.wizbii.cinematic.journey.domain.entity.TmdbCast
 import com.wizbii.cinematic.journey.presentation.component.AutoSizeText
 import com.wizbii.cinematic.journey.presentation.component.MovieListItem
+import com.wizbii.cinematic.journey.presentation.component.PersonListItem
 import com.wizbii.cinematic.journey.presentation.component.RemoteImage
 import com.wizbii.cinematic.journey.presentation.component.scrollbar.ColumnWithScrollbar
 import com.wizbii.cinematic.journey.presentation.component.top.bar.TopBarContent
 import com.wizbii.cinematic.journey.presentation.util.toString
 import com.wizbii.cinematic.journey.whenPlatform
 import com.wizbii.cinematicjourney.generated.resources.Res
+import com.wizbii.cinematicjourney.generated.resources.movie_cast
 import com.wizbii.cinematicjourney.generated.resources.movie_prerequisites_one
 import com.wizbii.cinematicjourney.generated.resources.movie_prerequisites_other
 import com.wizbii.cinematicjourney.generated.resources.movie_prerequisites_zero
@@ -69,6 +63,7 @@ import kotlin.math.ceil
 @Composable
 fun MovieScreen(component: MovieComponent = PreviewMovieComponent()) {
 
+    val cast by component.cast.collectAsState()
     val movie by component.movie.collectAsState()
     val prerequisites by component.prerequisites.collectAsState()
 
@@ -93,6 +88,7 @@ fun MovieScreen(component: MovieComponent = PreviewMovieComponent()) {
         Content(
             backdropUrlBuilder = component::backdropUrl,
             bottomSafeAreaPadding = innerPadding.calculateBottomPadding(),
+            cast = cast,
             modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
             movie = movie,
             prerequisites = prerequisites,
@@ -109,6 +105,7 @@ fun MovieScreen(component: MovieComponent = PreviewMovieComponent()) {
 private fun Content(
     backdropUrlBuilder: (String?, Int) -> StateFlow<String?>,
     bottomSafeAreaPadding: Dp,
+    cast: List<TmdbCast>?,
     modifier: Modifier,
     movie: Movie?,
     prerequisites: List<Movie>?,
@@ -139,6 +136,12 @@ private fun Content(
                 end = 16.dp + endPadding,
             ),
             movie = movie,
+        )
+
+        Cast(
+            modifier = Modifier.padding(vertical = 16.dp),
+            cast = cast ?: emptyList(),
+            posterUrlBuilder = posterUrlBuilder,
         )
 
         MoviePrerequisites(
@@ -274,6 +277,51 @@ private fun MovieDescription(
             text = overview,
         )
 
+    }
+
+}
+
+@OptIn(ExperimentalResourceApi::class)
+@Composable
+private fun Cast(
+    modifier: Modifier = Modifier,
+    cast: List<TmdbCast>,
+    posterUrlBuilder: (String?, Int) -> Flow<String?>,
+) {
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+
+        Text(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = SemiBold),
+            text = stringResource(Res.string.movie_cast),
+        )
+
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+
+            items(
+                items = cast,
+                key = { it.tmdbPersonId.value },
+            ) { person ->
+
+                PersonListItem(
+                    modifier = Modifier
+                        .animateItemPlacement(),
+                    personCharacter = person.character,
+                    personName = person.name,
+                    profileImgHeight = 180.dp,
+                    personProfileImgPath = person.profileImgPath,
+                    posterUrlBuilder = posterUrlBuilder,
+                )
+
+            }
+        }
     }
 
 }

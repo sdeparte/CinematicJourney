@@ -5,10 +5,8 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.wizbii.cinematic.journey.domain.entity.Movie
 import com.wizbii.cinematic.journey.domain.entity.MovieId
-import com.wizbii.cinematic.journey.domain.use.case.GetMovieBackdropUrlForWidthUseCase
-import com.wizbii.cinematic.journey.domain.use.case.GetMoviePosterUrlForWidthUseCase
-import com.wizbii.cinematic.journey.domain.use.case.ObserveMovieUseCase
-import com.wizbii.cinematic.journey.domain.use.case.SetMovieWatchedUseCase
+import com.wizbii.cinematic.journey.domain.entity.TmdbCast
+import com.wizbii.cinematic.journey.domain.use.case.*
 import com.wizbii.cinematic.journey.presentation.component.top.bar.DefaultTopBarComponent
 import com.wizbii.cinematic.journey.presentation.componentCoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -36,6 +34,7 @@ class DefaultMovieComponent(
     private val getMovieBackdropUrlForWidthUseCase: GetMovieBackdropUrlForWidthUseCase by inject()
     private val getMoviePosterUrlForWidthUseCase: GetMoviePosterUrlForWidthUseCase by inject()
     private val observeMovieUseCase: ObserveMovieUseCase by inject()
+    private val observeCastForMovieUseCase: ObserveCastForMovieUseCase by inject()
     private val setMovieWatchedUseCase: SetMovieWatchedUseCase by inject()
 
     private val scope = componentCoroutineScope()
@@ -45,6 +44,8 @@ class DefaultMovieComponent(
     private val posters = MutableStateFlow<Map<String, String>>(emptyMap())
 
     private val postersMutex = Mutex()
+
+    override val cast = MutableStateFlow<List<TmdbCast>?>(null)
 
     override val movie = MutableStateFlow<Movie?>(null)
 
@@ -81,6 +82,17 @@ class DefaultMovieComponent(
                 }
                 .collect {
                     prerequisites.value = it
+                }
+        }
+        scope.launch {
+            @OptIn(ExperimentalCoroutinesApi::class)
+            movie
+                .filterNotNull()
+                .flatMapLatest { movie ->
+                    observeCastForMovieUseCase(movie.tmdbId, language)
+                }
+                .collect {
+                    cast.value = it
                 }
         }
     }

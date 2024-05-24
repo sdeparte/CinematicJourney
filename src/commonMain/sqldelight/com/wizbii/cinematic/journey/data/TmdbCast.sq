@@ -1,0 +1,68 @@
+import com.wizbii.cinematic.journey.domain.entity.TmdbMovieId;
+import com.wizbii.cinematic.journey.domain.entity.TmdbPersonId;
+import kotlinx.datetime.Instant;
+
+CREATE TABLE tmdbCastRecord (
+
+    -- Identifiers
+    id INTEGER AS TmdbPersonId NOT NULL,
+    tmdbMovieId INTEGER AS TmdbMovieId NOT NULL,
+    language TEXT NOT NULL,
+
+    -- TMDB Data
+    character TEXT,
+    fetchDate INTEGER AS Instant NOT NULL,
+    name TEXT,
+    profileImgPath TEXT,
+
+    -- Keys
+    PRIMARY KEY (id, tmdbMovieId, language),
+    FOREIGN KEY (tmdbMovieId) REFERENCES tmdbMovieRecord(id) ON DELETE CASCADE
+
+);
+
+createOrUpdateTmdbCast {
+
+    -- Updates if exists
+    -- Does nothing if missing
+    UPDATE tmdbCastRecord
+    SET character = :character,
+        fetchDate = :fetchDate,
+        name = :name,
+        profileImgPath = :profileImgPath
+    WHERE id = :id
+      AND tmdbMovieId = :tmdbMovieId
+      AND language = :language;
+
+    -- Inserts if missing
+    -- Does nothing if exists
+    INSERT OR IGNORE INTO tmdbCastRecord(
+        id,
+        tmdbMovieId,
+        language,
+        character,
+        fetchDate,
+        name,
+        profileImgPath
+    )
+    VALUES (
+        :id,
+        :tmdbMovieId,
+        :language,
+        :character,
+        :fetchDate,
+        :name,
+        :profileImgPath
+    );
+
+}
+
+readTmdbCastForMovie:
+    SELECT *
+    FROM tmdbCastRecord
+    WHERE tmdbMovieId = :tmdbMovieId
+      AND language = :language;
+
+deleteTmdbCastsOlderThan:
+    DELETE FROM tmdbCastRecord
+    WHERE fetchDate < ?;

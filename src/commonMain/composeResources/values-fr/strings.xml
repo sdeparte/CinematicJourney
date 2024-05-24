@@ -24,6 +24,7 @@
     <!-- Component-specific strings -->
 
     <!-- Movie -->
+    <string name="movie_cast">Distribution :</string>
     <string name="movie_prerequisites_zero">Aucun prérequis !</string>
     <string name="movie_prerequisites_one">Prérequis:</string>
     <string name="movie_prerequisites_other">Prérequis:</string>
